@@ -106,8 +106,10 @@ int park(int forward_input, int reverse_input) {
 
 void allRelaysOpen() {
     HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(RL3_GPIO_Port, RL3_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(RL4_GPIO_Port, RL4_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RL5_GPIO_Port, RL4_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(RL6_GPIO_Port, RL6_Pin, GPIO_PIN_RESET);
     HAL_Delay(1000);
 }
@@ -227,6 +229,7 @@ int main(void)
                 allRelaysOpen();
                 HAL_Delay(1000);
                 HAL_GPIO_WritePin(RL6_GPIO_Port, RL6_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(RL5_GPIO_Port, RL5_Pin, GPIO_PIN_SET);
                 HAL_Delay(1000);// delay before aux
                 while (charge_state == GPIO_PIN_SET)
                 {
@@ -246,6 +249,7 @@ int main(void)
             {
                 allRelaysOpen();
                 HAL_GPIO_WritePin(RL3_GPIO_Port, RL3_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_SET);
                 HAL_Delay(1000);// delay before aux
                 if (ignition_aux() == 0){
                 	printDebug("Auxilary Error during Ignition");
@@ -264,6 +268,7 @@ int main(void)
             {
                 allRelaysOpen();
                 HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_SET);
+                HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_SET);
                 HAL_Delay(1000);// delay before aux
                 while (main_state == GPIO_PIN_SET && operation == 1 && park(forward_state, reverse_state) == 0)
                 {
