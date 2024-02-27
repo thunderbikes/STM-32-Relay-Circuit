@@ -32,6 +32,8 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -53,7 +55,7 @@
 
 #define CHARGE_INPUT_Pin GPIO_PIN_1
 #define CHARGE_INPUT_GPIO_Port GPIOB
-#define MAIN_INPUT_Pin GPIO_PIN_8
+#define MAIN_INPUT_Pin GPIO_PIN_6
 #define MAIN_INPUT_GPIO_Port GPIOA
 #define FORWARD_INPUT_Pin GPIO_PIN_7
 #define FORWARD_INPUT_GPIO_Port GPIOA
@@ -70,14 +72,14 @@
 #define PUMP_OUTPUT_GPIO_Port GPIOA
 
 
-#define R1_AUX_Pin GPIO_PIN_8
+#define R1_AUX_Pin GPIO_PIN_5
 #define R1_AUX_GPIO_Port GPIOB
 #define R2_AUX_Pin GPIO_PIN_7
 #define R2_AUX_GPIO_Port GPIOB
 #define R3_AUX_Pin GPIO_PIN_6
 #define R3_AUX_GPIO_Port GPIOB
-#define R6_AUX_Pin GPIO_PIN_5
-#define R6_AUX_GPIO_Port GPIOB
+//#define R6_AUX_Pin GPIO_PIN_5
+//#define R6_AUX_GPIO_Port GPIOB
 
 
 /* USER CODE END PD */
@@ -90,7 +92,7 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan;
 
-TIM_HandleTypeDef htim3;
+
 
 /* USER CODE BEGIN PV */
 
@@ -99,8 +101,7 @@ TIM_HandleTypeDef htim3;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CAN_Init(void);
-static void MX_TIM3_Init(void);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -111,75 +112,9 @@ static void MX_TIM3_Init(void);
  *
  */
 
-CAN_TxHeaderTypeDef TxHeader1, TxHeader2, TxHeader3;
-uint8_t TxData1[8], TxData2[8], TxData3[8];
-uint32_t TxMailbox;// Initialization code for CAN and Timer (not shown)
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    if (htim->Instance == TIM3) { // Replace TIMx with your timer instance
-        // Prepare CAN messages
-        // Message 1 -> Relay output Status
-        TxHeader1.StdId = 0x321;
-        TxHeader1.IDE = CAN_ID_STD;
-        TxHeader1.RTR = CAN_RTR_DATA;
-        TxHeader1.DLC = 6;
-
-        TxData1[0] = HAL_GPIO_ReadPin(RL1_GPIO_Port, RL1_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData1[1] = HAL_GPIO_ReadPin(RL2_GPIO_Port, RL2_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData1[2] = HAL_GPIO_ReadPin(RL3_GPIO_Port, RL3_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData1[3] = HAL_GPIO_ReadPin(RL4_GPIO_Port, RL4_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData1[4] = HAL_GPIO_ReadPin(RL5_GPIO_Port, RL5_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData1[5] = HAL_GPIO_ReadPin(RL6_GPIO_Port, RL6_Pin) == GPIO_PIN_SET ? 1 : 0;
-
-        // Message 2 -> Aux status + BMS inputs
-        TxHeader2.StdId = 0x322;
-        TxHeader2.IDE = CAN_ID_STD;
-        TxHeader2.RTR = CAN_RTR_DATA;
-        TxHeader2.DLC = 7;
-
-        TxData2[0] = HAL_GPIO_ReadPin(R1_AUX_GPIO_Port, R1_AUX_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[1] = HAL_GPIO_ReadPin(R2_AUX_GPIO_Port, R2_AUX_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[2] = HAL_GPIO_ReadPin(R3_AUX_GPIO_Port, R3_AUX_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[3] = HAL_GPIO_ReadPin(R6_AUX_GPIO_Port, R6_AUX_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[4] = HAL_GPIO_ReadPin(BMS_Input1_GPIO_Port, RL1_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[5] = HAL_GPIO_ReadPin(BMS_Input2_GPIO_Port, RL1_Pin) == GPIO_PIN_SET ? 1 : 0;
-        TxData2[6] = HAL_GPIO_ReadPin(BMS_Input3_GPIO_Port, RL1_Pin) == GPIO_PIN_SET ? 1 : 0;
-
-       // Message 3 -> Input Switch Status + Pump Output
-        TxHeader3.StdId = 0x323;
-        TxHeader3.IDE = CAN_ID_STD;
-        TxHeader3.RTR = CAN_RTR_DATA;
-        TxHeader3.DLC = 5;
-
-       TxData3[0] = HAL_GPIO_ReadPin(MAIN_INPUT_GPIO_Port, MAIN_INPUT_Pin) == GPIO_PIN_SET ? 1 : 0;
-       TxData3[1] = HAL_GPIO_ReadPin(FORWARD_INPUT_GPIO_Port, FORWARD_INPUT_Pin) == GPIO_PIN_SET ? 1 : 0;
-       TxData3[2] = HAL_GPIO_ReadPin(REVERSE_INPUT_GPIO_Port, REVERSE_INPUT_Pin) == GPIO_PIN_SET ? 1 : 0;
-       TxData3[3] = HAL_GPIO_ReadPin(CHARGE_INPUT_GPIO_Port, CHARGE_INPUT_Pin) == GPIO_PIN_SET ? 1 : 0;
-       TxData3[4] = HAL_GPIO_ReadPin(PUMP_OUTPUT_GPIO_Port, PUMP_OUTPUT_Pin) == GPIO_PIN_SET ? 1 : 0;
-
-
-        // Queue CAN messages#
-        //Error Handling // Message
-        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader1, TxData1, &TxMailbox) != HAL_OK) {
-          printf("Error sending message 1");
-        }
-
-        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader2, TxData2, &TxMailbox) != HAL_OK) {
-          printf("Error sending message 2");
-        }
-
-        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader3, TxData3, &TxMailbox) != HAL_OK) {
-          printf("Error sending message 3");
-        }
-    }
-}
 
 
 
-
-int park(int forward_input, int reverse_input) {
-    return (forward_input == GPIO_PIN_RESET && reverse_input == GPIO_PIN_RESET) ? 1 : 0;
-}
 
 void allRelaysOpen() {
     HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_RESET);
@@ -203,7 +138,7 @@ void allAuxDigitalRead(){
 	 HAL_GPIO_ReadPin(R1_AUX_GPIO_Port, R1_AUX_Pin);
 	 HAL_GPIO_ReadPin(R2_AUX_GPIO_Port, R2_AUX_Pin);
 	HAL_GPIO_ReadPin(R3_AUX_GPIO_Port, R3_AUX_Pin);
-	HAL_GPIO_ReadPin(R6_AUX_GPIO_Port, R6_AUX_Pin);
+
 }
 
 int Reading_Pin(char aux_number){
@@ -217,9 +152,6 @@ int Reading_Pin(char aux_number){
             break;
         case '3':
             state = HAL_GPIO_ReadPin(R3_AUX_GPIO_Port, R3_AUX_Pin);
-            break;
-        case '6':
-            state = HAL_GPIO_ReadPin(R6_AUX_GPIO_Port, R6_AUX_Pin);
             break;
         case 'm':
             state =HAL_GPIO_ReadPin(MAIN_INPUT_GPIO_Port, MAIN_INPUT_Pin);
@@ -242,7 +174,7 @@ int Reading_Pin(char aux_number){
 
 int ignition_aux(){
 	allAuxDigitalRead();
-	if(Reading_Pin(1) == 1 && Reading_Pin(2) == 1 && Reading_Pin(3) == 1 && Reading_Pin(6) == 0) {
+	if(Reading_Pin(1) == 0 && Reading_Pin(2) == 1 && Reading_Pin(3) == 1) {
 		return 1;
 	} else {
 		return 0;
@@ -251,7 +183,7 @@ int ignition_aux(){
 
 int charging_aux(){
 	allAuxDigitalRead();
-	if(Reading_Pin(1) == 0 && Reading_Pin(2) == 0 && Reading_Pin(3) == 0 && Reading_Pin(6) == 1) {
+	if(Reading_Pin(1) == 0 && Reading_Pin(2) == 0 && Reading_Pin(3) == 0 ) {
 		return 1;
 	} else {
 		return 0;
@@ -260,7 +192,7 @@ int charging_aux(){
 
 int discharging_aux(){
 	allAuxDigitalRead();
-	if(Reading_Pin(1) == 0 && Reading_Pin(2) == 0 && Reading_Pin(3) == 0 && Reading_Pin(6) == 0) {
+	if(Reading_Pin(1) == 0 && Reading_Pin(2) == 0 && Reading_Pin(3) == 0 ) {
 		return 1;
 	} else {
 		return 0;
@@ -269,7 +201,7 @@ int discharging_aux(){
 
 int operation_aux(){
 	allAuxDigitalRead();
-	if(Reading_Pin(1) == 1 && Reading_Pin(2) == 1 && Reading_Pin(3) ==0 && Reading_Pin(6) == 0) {
+	if(Reading_Pin(1) == 1 && Reading_Pin(2) == 1 && Reading_Pin(3) ==0 ) {
 		return 1;
 	} else {
 		return 0;
@@ -283,6 +215,9 @@ void printDebug(char* message) {
 }
 
 /* USER CODE END 0 */
+int park() {
+    return (Reading_Pin('f') == 0 && Reading_Pin('r') == 0) ? 1 : 0;
+}
 
 /**
   * @brief  The application entry point.
@@ -291,7 +226,7 @@ void printDebug(char* message) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	volatile int operation = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -304,7 +239,7 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+
 
   /* USER CODE BEGIN SysInit */
 
@@ -312,77 +247,80 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN_Init();
-  MX_TIM3_Init();
-  /* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-/*  while (1)
-  {
-
-        allDigitalRead();
-        allAuxDigitalRead();
-        HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_SET);
-        HAL_Delay(2000);
-        HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_SET);
-
-
-        HAL_Delay(2000);
-        if (AUX_Read(2)== 1){
-        HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_RESET);
-        HAL_Delay(2000);
-        HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_RESET);
-
-        break;
-        }
-
-        if (HAL_GPIO_ReadPin(R2_AUX_GPIO_Port,R2_AUX_Pin) == 1 ){
-        	HAL_GPIO_WritePin(RL3_GPIO_Port, RL3_Pin, GPIO_PIN_RESET);
-        	break;
-        }
-
-      }
-*/
 
 
   while (1)
    {
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-             // CHARGING
 
-             if (Reading_Pin('c') == 1 )
-                          {
-                              HAL_GPIO_WritePin(RL4_GPIO_Port, RL4_Pin, GPIO_PIN_SET);
-                              allDigitalRead();
-                          }
-             else                                        {
-                                           HAL_GPIO_WritePin(RL4_GPIO_Port, RL4_Pin, GPIO_PIN_RESET);
-                                           allDigitalRead();
-                                       }
+	  //park() = 0 = forward
+	  // park() =  = park
+         if ( park() == 0 && Reading_Pin('m') == 1 && operation == 1) //operation
+                              {
 
+        	              allRelaysOpen();
+                          while (park() == 0 && Reading_Pin('m') == 1 && operation == 1 ){
+                                  }
          }
 
 
-  /* USER CODE END 3 */
+         if (park() == 1 && Reading_Pin('m') == 1 && operation == 0) // ignition (increase 7 seconds)
+                                       {
+        	 	 	 	 	 	 	 	 allRelaysOpen();
+                                           HAL_GPIO_WritePin(RL3_GPIO_Port, RL3_Pin, GPIO_PIN_SET);
+                                           HAL_Delay(1000);
+                                           HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_SET);
+                                           HAL_Delay(1000);// delay before aux
+                                           operation = 1;
+                                           while (park() == 1  && Reading_Pin('m') == 1 && operation == 0)
+                                           {
+                                                                             	  }
+                                           }
+
+
+         if (operation == 1 && park() == 1 && Reading_Pin('m') == 1) { // in park but bike stays on
+        	 allRelaysOpen();
+             HAL_Delay(1000);
+             HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_SET);
+             HAL_Delay(1000);
+             HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_SET);
+        	 while (operation == 1 && park() == 1 && Reading_Pin('m') == 1 )
+        	                                            {
+        	                                                                              	  }
+         }
+
+
+
+         if (operation == 1 && park() == 1 && Reading_Pin('m') == 0 ) { //discharge
+        	 HAL_GPIO_WritePin(RL1_GPIO_Port, RL1_Pin, GPIO_PIN_RESET);
+        	 HAL_Delay(1000);
+        	 HAL_GPIO_WritePin(RL4_GPIO_Port, RL4_Pin, GPIO_PIN_SET);
+        	 HAL_Delay(1000);
+        	 HAL_GPIO_WritePin(RL2_GPIO_Port, RL2_Pin, GPIO_PIN_RESET);
+        	 HAL_Delay(1000);
+        	 allRelaysOpen();
+        	 operation = 0;
+        	 while (operation == 1 && park() == 1 && Reading_Pin('m') == 0 ){
+
+        	 }
+         }
+
+   }
+
 }
 
 /**
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void)
+/*void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -395,8 +333,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
+
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -408,92 +345,26 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 }
-
+*/
 /**
   * @brief CAN Initialization Function
   * @param None
   * @retval None
   */
-static void MX_CAN_Init(void)
-{
-
-  /* USER CODE BEGIN CAN_Init 0 */
-
-  /* USER CODE END CAN_Init 0 */
-
-  /* USER CODE BEGIN CAN_Init 1 */
-
-  /* USER CODE END CAN_Init 1 */
-  hcan.Instance = CAN;
-  hcan.Init.Prescaler = 16;
-  hcan.Init.Mode = CAN_MODE_NORMAL;
-  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
-  hcan.Init.TimeTriggeredMode = DISABLE;
-  hcan.Init.AutoBusOff = DISABLE;
-  hcan.Init.AutoWakeUp = DISABLE;
-  hcan.Init.AutoRetransmission = DISABLE;
-  hcan.Init.ReceiveFifoLocked = DISABLE;
-  hcan.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CAN_Init 2 */
-
-  /* USER CODE END CAN_Init 2 */
-
-}
 
 /**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM3_Init(void)
-{
 
-  /* USER CODE BEGIN TIM3_Init 0 */
 
-  /* USER CODE END TIM3_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 9999;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 9599;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
-}
 
 /**
   * @brief GPIO Initialization Function
   * @param None
+
   * @retval None
   */
 static void MX_GPIO_Init(void)
@@ -521,14 +392,14 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Main_input_Pin Forward_input_Pin BMS_Input3_Pin */
-  GPIO_InitStruct.Pin = Main_input_Pin|Forward_input_Pin|BMS_Input3_Pin;
+  GPIO_InitStruct.Pin = Main_Input_Pin|Forward_Input_Pin|BMS_Input3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Reverse_input_Pin CHARGE_INPUT_Pin BMS_Input2_Pin BMS_Input1_Pin
                            R1_Aux_Pin R3_Aux_Pin R2_Aux_Pin */
-  GPIO_InitStruct.Pin = Reverse_input_Pin|CHARGE_INPUT_Pin|BMS_Input2_Pin|BMS_Input1_Pin
+  GPIO_InitStruct.Pin = Reverse_Input_Pin|CHARGE_INPUT_Pin|BMS_Input2_Pin|BMS_Input1_Pin
                           |R1_Aux_Pin|R3_Aux_Pin|R2_Aux_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
