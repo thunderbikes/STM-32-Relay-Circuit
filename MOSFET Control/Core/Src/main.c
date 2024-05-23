@@ -96,6 +96,14 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+    //important pins for relays
+    //INPUTS: HV_SENSE, R1_AUX, R2_AUX, R3_AUX, R4_AUX, Ignition, Charge_Enable
+    //OUTPUTS: HVC+, HVC-, P_CHARGE, CHARGE+, CHARGE-, PUMP_ENABLE
+
+    //Not very important: SHDWN_ST, IMD_OK_L, BMS_OK_L, BMS_INPUT1, BMS_INPUT2, BMS_INPUT3, IGNITION, IMD_IO_H, IMD_IO_L
+
+    
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
