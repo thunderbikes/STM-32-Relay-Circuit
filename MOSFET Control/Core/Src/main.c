@@ -31,6 +31,42 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define R1_AUX_PORT GPIOB
+#define R2_AUX_PORT GPIOB
+#define R3_AUX_PORT GPIOB
+#define R4_AUX_PORT GPIOB
+
+#define IMD_IO_H_PORT
+#define IMD_IO_L_PORT
+
+
+#define HVC_POS_PORT GPIOC
+#define HVC_NEG_PORT GPIOC
+#define P_CHARGE_PORT GPIOC
+#define HV_SENSE_PORT HV_SENSE_GPIO_Port
+#define CHARGE_POS_PORT GPIOC
+#define CHARGE_NEG_PORT GPIOC
+
+#define BMS_INPUT1_PORT GPIOA
+#define BMS_INPUT2_PORT GPIOA
+#define BMS_INPUT3_PORT GPIOA
+
+#define SP1_NSS_PORT
+#define SP1_SCK_PORT
+#define SP1_MISO_PORT
+#define SP1_MOSI_PORT
+
+#define IGNITION_PORT GPIOC
+#define CHARGE_ENABLE_PORT GPIOC
+#define PUMP_ENABLE_PORT GPIOC
+
+#define BMS_OK_L_PORT GPIOB
+#define IMD_OK_L_PORT GPIOB
+#define CTRL_OK_PORT CTRL_OK_GPIO_PORT
+#define SHDWN_ST_PORT GPIOA
+
+#define CAN1_TX_PORT
+#define CAN1_RX_PORT
 
 /* USER CODE END PD */
 
@@ -40,7 +76,11 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CAN_HandleTypeDef hcan2;
+ADC_HandleTypeDef hadc1;
+
+CAN_HandleTypeDef hcan1;
+
+SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 
@@ -49,14 +89,64 @@ CAN_HandleTypeDef hcan2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CAN2_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void allRelaysOpen() {
+    HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(HVC_NEG_PORT, HVC_NEG_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(CHARGE_NEG_PORT, CHARGE_NEG_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(PUMP_ENABLE_PORT, PUMP_ENABLE_Pin, GPIO_PIN_RESET);
+    HAL_Delay(1000);
+}
 
+void allDigitalRead() {
+    HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin);
+     HAL_GPIO_ReadPin(CHARGE_ENABLE_PORT, CHARGE_ENABLE_Pin);
+
+}
+
+void allAuxDigitalRead(){
+	 HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin);
+	 HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin);
+	HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin);
+}
+
+int Reading_Pin(char aux_number){
+    int state = 0; // Default state
+    switch(aux_number){
+        case '1':
+            state = HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin);
+            break;
+        case '2':
+            state = HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin);
+            break;
+        case '3':
+            state = HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin);
+            break;
+        case 'I':
+            state =HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin);
+            break;
+        case 'c':
+            state = HAL_GPIO_ReadPin(CHARGE_ENABLE_PORT, CHARGE_ENABLE_Pin);
+            break;
+        case 'h':
+            state = HAL_GPIO_ReadPin(HV_SENSE_PORT, HV_SENSE_Pin);
+            break;
+        default:
+            state = -1; // Indicate an invalid aux_number
+            break;
+    }
+    return state;
+}
 /* USER CODE END 0 */
 
 /**
@@ -67,6 +157,20 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	//
+	uint32_t Read_ADC_Value(void) {
+	    // Start the ADC
+	    HAL_ADC_Start(&hadc1);
+
+	    // Poll for conversion completion with a timeout of 10ms
+	    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+	        // Get the converted value
+	        return HAL_ADC_GetValue(&hadc1);
+	    }
+
+	    // Return 0 or some error code if reading fails
+	    return 0;
+	}
 
   /* USER CODE END 1 */
 
@@ -76,7 +180,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  uint32_t hv_sense_value = Read_ADC_Value();
+  printf("HV Sense Voltage: %lu\r\n", hv_sense_value)
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -88,7 +193,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN2_Init();
+  MX_SPI1_Init();
+  MX_CAN1_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -98,16 +205,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
-    //important pins for relays
-    //INPUTS: HV_SENSE, R1_AUX, R2_AUX, R3_AUX, R4_AUX, Ignition, Charge_Enable
-    //OUTPUTS: HVC+, HVC-, P_CHARGE, CHARGE+, CHARGE-, PUMP_ENABLE
-
-    //Not very important: SHDWN_ST, IMD_OK_L, BMS_OK_L, BMS_INPUT1, BMS_INPUT2, BMS_INPUT3, IGNITION, IMD_IO_H, IMD_IO_L
-
-    
+	  raw =
 
     /* USER CODE BEGIN 3 */
+	  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+
   }
   /* USER CODE END 3 */
 }
@@ -154,39 +256,129 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief CAN2 Initialization Function
+  * @brief ADC1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_CAN2_Init(void)
+static void MX_ADC1_Init(void)
 {
 
-  /* USER CODE BEGIN CAN2_Init 0 */
+  /* USER CODE BEGIN ADC1_Init 0 */
 
-  /* USER CODE END CAN2_Init 0 */
+  /* USER CODE END ADC1_Init 0 */
 
-  /* USER CODE BEGIN CAN2_Init 1 */
+  ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE END CAN2_Init 1 */
-  hcan2.Instance = CAN2;
-  hcan2.Init.Prescaler = 16;
-  hcan2.Init.Mode = CAN_MODE_NORMAL;
-  hcan2.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan2.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan2.Init.TimeSeg2 = CAN_BS2_1TQ;
-  hcan2.Init.TimeTriggeredMode = DISABLE;
-  hcan2.Init.AutoBusOff = DISABLE;
-  hcan2.Init.AutoWakeUp = DISABLE;
-  hcan2.Init.AutoRetransmission = DISABLE;
-  hcan2.Init.ReceiveFifoLocked = DISABLE;
-  hcan2.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan2) != HAL_OK)
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN CAN2_Init 2 */
 
-  /* USER CODE END CAN2_Init 2 */
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief CAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN1_Init(void)
+{
+
+  /* USER CODE BEGIN CAN1_Init 0 */
+
+  /* USER CODE END CAN1_Init 0 */
+
+  /* USER CODE BEGIN CAN1_Init 1 */
+
+  /* USER CODE END CAN1_Init 1 */
+  hcan1.Instance = CAN1;
+  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan1.Init.TimeTriggeredMode = DISABLE;
+  hcan1.Init.AutoBusOff = DISABLE;
+  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
+  hcan1.Init.ReceiveFifoLocked = DISABLE;
+  hcan1.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN1_Init 2 */
+
+  /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -207,8 +399,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, HVC__Pin|HVC_C1_Pin|P_CHARGE_Pin|CHARGE__Pin
-                          |CHARGE_C4_Pin|PUMP_ENABLE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, HVC_POS_Pin|HVC_NEG_Pin|P_CHARGE_Pin|CHARGE_POS_Pin
+                          |CHARGE_NEG_Pin|PUMP_ENABLE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
@@ -219,10 +411,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : HVC__Pin HVC_C1_Pin P_CHARGE_Pin CHARGE__Pin
-                           CHARGE_C4_Pin PUMP_ENABLE_Pin */
-  GPIO_InitStruct.Pin = HVC__Pin|HVC_C1_Pin|P_CHARGE_Pin|CHARGE__Pin
-                          |CHARGE_C4_Pin|PUMP_ENABLE_Pin;
+  /*Configure GPIO pins : HVC_POS_Pin HVC_NEG_Pin P_CHARGE_Pin CHARGE_POS_Pin
+                           CHARGE_NEG_Pin PUMP_ENABLE_Pin */
+  GPIO_InitStruct.Pin = HVC_POS_Pin|HVC_NEG_Pin|P_CHARGE_Pin|CHARGE_POS_Pin
+                          |CHARGE_NEG_Pin|PUMP_ENABLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -248,12 +440,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CTRL_OK_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : HV_SENSE_Pin */
-  GPIO_InitStruct.Pin = HV_SENSE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(HV_SENSE_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
