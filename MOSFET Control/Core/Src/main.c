@@ -62,7 +62,6 @@
 
 #define BMS_OK_L_PORT GPIOB
 #define IMD_OK_L_PORT GPIOB
-#define CTRL_OK_PORT CTRL_OK_GPIO_PORT
 #define SHDWN_ST_PORT GPIOA
 
 #define CAN1_TX_PORT
@@ -139,7 +138,7 @@ int Reading_Pin(char aux_number){
             state = HAL_GPIO_ReadPin(CHARGE_ENABLE_PORT, CHARGE_ENABLE_Pin);
             break;
         case 'h':
-            state = HAL_GPIO_ReadPin(HV_SENSE_PORT, HV_SENSE_Pin);
+            state = HAL_GPIO_ReadPin(HV_SENSE_GPIO_Port, HV_SENSE_Pin);
             break;
         default:
             state = -1; // Indicate an invalid aux_number
@@ -158,14 +157,18 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	//
-	uint32_t Read_ADC_Value(void) {
+	float Read_ADC_Voltage(void) {
+		uint32_t hv_sense_value;
+		float hv_sense_voltage;
 	    // Start the ADC
 	    HAL_ADC_Start(&hadc1);
 
 	    // Poll for conversion completion with a timeout of 10ms
-	    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+	    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK) {
 	        // Get the converted value
-	        return HAL_ADC_GetValue(&hadc1);
+	    	hv_sense_value = HAL_ADC_GetValue(&hadc1);
+	    	hv_sense_voltage = (hv_sense_value / 4095.0) * 103.6;
+	    	return hv_sense_voltage;
 	    }
 
 	    // Return 0 or some error code if reading fails
@@ -180,8 +183,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint32_t hv_sense_value = Read_ADC_Value();
-  printf("HV Sense Voltage: %lu\r\n", hv_sense_value)
+  //voltage = (adc_value / 4095.0) * 3.3
+  //printf("HV Sense Voltage: %lu\r\n", hv_sense_value)
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -204,11 +207,53 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  //voltage = (adc_value / 4095.0) * 3.3
+	  float hv_sense_voltage = Read_ADC_Voltage();
+	  int operation = 0;
     /* USER CODE END WHILE */
-	  raw =
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+	  if (Reading_Pin('I') == 1 && operation == 0)
+	  {
+		  allRelaysOpen();
+		  operation = 1;
+		  HAL_GPIO_WritePin(HVC_NEG_PORT, HVC_NEG_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(PUMP_ENABLE_PORT, PUMP_ENABLE_Pin, GPIO_PIN_SET);
+
+
+		  /*
+		   * The hv sense voltage gives voltage between the motor controller, we divide that by bms_battert
+		   * voltage from canbus and if it is greater that 90 PERCENT
+		  */
+
+
+		  //Operation Mode
+		  HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_SET);
+		  HAL_Delay(1000);
+		  //NEED TO DO CHECKING AUX
+		  HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_RESET);
+	  }
+	  //Discharge
+	  if (Reading_Pin('I') == 0 && operation == 1 )
+		  {
+		  HAL_Delay(30000); // 30 second delay
+		  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+		  allRelaysOpen();
+		  operation = 0;
+
+		  }
+	  //Charging
+	  if (Reading_Pin('c') == 1 )
+	  {
+		  allRelaysOpen();
+		  HAL_GPIO_WritePin(CHARGE_NEG_PORT, CHARGE_NEG_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_SET);
+
+	  }
+
+
+
 
   }
   /* USER CODE END 3 */
