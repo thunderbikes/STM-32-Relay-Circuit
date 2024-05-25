@@ -237,9 +237,14 @@ int main(void)
 	  //Discharge
 	  if (Reading_Pin('I') == 0 && operation == 1 )
 		  {
-		  HAL_Delay(30000); // 30 second delay
-		  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+		  ///check fault first
+		  //if fault instnat no delay
 		  allRelaysOpen();
+		  //if fine
+		  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+		  HAL_Delay(30000); // 30 second delay
+		  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_SET);
+
 		  operation = 0;
 
 		  }
@@ -253,7 +258,9 @@ int main(void)
 	  }
 
 
+//check always allreaykls ooen
 
+	  error handingling ctrlok= 0 wait forbere
 
   }
   /* USER CODE END 3 */
