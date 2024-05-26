@@ -39,7 +39,6 @@
 #define IMD_IO_H_PORT
 #define IMD_IO_L_PORT
 
-
 #define HVC_POS_PORT GPIOC
 #define HVC_NEG_PORT GPIOC
 #define P_CHARGE_PORT GPIOC
@@ -66,6 +65,31 @@
 
 #define CAN1_TX_PORT
 #define CAN1_RX_PORT
+
+//all possible status
+// #define UPDATING = 0;
+// #define SHUTDOWN = 1;
+// #define STANDBY = 2;
+// #define CHARGING = 3;
+// #define PRECHARGE = 4;
+// #define OPERATION = 5;
+// #define DISCHARGE = 6;
+
+typedef enum {
+    UPDATING,
+    SHUTDOWN,
+    STANDBY,
+    CHARGING,
+    PRECHARGE,
+    OPERATION,
+    DISCHARGE
+} AllStatus;
+
+AllStatus Status = STANDBY;
+int updating_counter = 0;
+int operation = 0; 
+int ignition = 0;
+int charging = 0;
 
 /* USER CODE END PD */
 
@@ -209,52 +233,37 @@ int main(void)
   {
 	  //voltage = (adc_value / 4095.0) * 3.3
 	  float hv_sense_voltage = Read_ADC_Voltage();
-	  int operation = 0;
+	  //int operation = 0; //i changed this to global variable -ray
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	  if (Reading_Pin('I') == 1 && operation == 0)
 	  {
-		  allRelaysOpen();
-		  operation = 1;
-		  HAL_GPIO_WritePin(HVC_NEG_PORT, HVC_NEG_Pin, GPIO_PIN_SET);
-		  HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_SET);
-		  HAL_GPIO_WritePin(PUMP_ENABLE_PORT, PUMP_ENABLE_Pin, GPIO_PIN_SET);
+		  set_precharge();
 
+      //hv sense code -ray
+		  while(true){
+        hv_sense_voltage = Read_ADC_Voltage();
+        if(hv_sense_voltage >= 0.9*103.6){ //change 103.6 to bms battery voltage reading -ray
+          break;
+        }
+        else{
+          printf("HV Sense Voltage: %f\r\n", hv_sense_voltage);
+          HAL_Delay(1000);
+        }
+      }
 
-		  /*
-		   * The hv sense voltage gives voltage between the motor controller, we divide that by bms_battert
-		   * voltage from canbus and if it is greater that 90 PERCENT
-		  */
-
-
-		  //Operation Mode
-		  HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_SET);
-		  HAL_Delay(1000);
-		  //NEED TO DO CHECKING AUX
-		  HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_RESET);
+		  while_operation();
 	  }
 	  //Discharge
-	  if (Reading_Pin('I') == 0 && operation == 1 )
-		  {
-		  HAL_Delay(30000); // 30 second delay
-		  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
-		  allRelaysOpen();
-		  operation = 0;
-
+	  if (Reading_Pin('I') == 0 && operation == 1 ){
+		  set_discharge();
 		  }
 	  //Charging
-	  if (Reading_Pin('c') == 1 )
-	  {
-		  allRelaysOpen();
-		  HAL_GPIO_WritePin(CHARGE_NEG_PORT, CHARGE_NEG_Pin, GPIO_PIN_SET);
-		  HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_SET);
-
+	  if (Reading_Pin('c') == 1 && Reading_Pin('I') == 0 && operation == 0){ 
+      //make sure no accidental charging during operation ^^^-ray
+		  set_charging();
 	  }
-
-
-
-
   }
   /* USER CODE END 3 */
 }
@@ -535,3 +544,119 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+
+//////////////////////////Start of Raymond Code//////////////////////////
+
+//to my knowledge, this interrupt only checks 3 AUX pins not pump, charge, etc..
+//I dont know how to set up interupt as on a timer -ray)
+void interupt(){
+  if (HAL_GPIO_ReadPin(GPIOA, SHDWN_ST_GPIO_Port) == 1){
+    Status = SHUTDOWN;
+  }
+  switch(Status) {
+    case UPDATING:
+      updating_counter++;
+      if (updating_counter > 100){ //100 is arbitrary value, please account for 30 sec discharge when modifying -ray
+        Status = SHUTDOWN;
+      }
+      else{
+        break;
+      }
+    case SHUTDOWN:
+      if(HAL_GPIO_ReadPin(GPIOB, IMD_OK_L_GPIO_Port) == 0){
+        printf("IMD NOT OK.\n");
+      }
+      else if (HAL_GPIO_ReadPin(GPIOB, BMS_OK_L_GPIO_Port) == 0){
+        printf("BMS NOT OK.\n");
+      }
+      else{
+        printf("Cause of shutdown is unknown.\n");
+      }
+      Error_Handler();
+    case STANDBY:
+      updating_counter = 0;
+      //i forgot which AUX pins we need to check for standby -ray
+      break;
+    case CHARGING:
+      updating_counter = 0;
+      //i dont know which AUX pins we need to check for charging -ray
+      break;
+    case PRECHARGE:
+      updating_counter = 0;
+      if(HAL_GPIO_ReadPin(GPIOB, R1_AUX_GPIO_Port) == 0){ //please double check all AUX pins -ray
+        if(HAL_GPIO_ReadPin(GPIOB, R2_AUX_GPIO_Port) == 1){ //also 3 if statements seems a bit more readable
+          if(HAL_GPIO_ReadPin(GPIOB, R3_AUX_GPIO_Port) == 1){
+            break;
+          }
+        }
+      }
+      Error_Handler();
+    case OPERATION:
+      updating_counter = 0;
+      if(HAL_GPIO_ReadPin(GPIOB, R1_AUX_GPIO_Port) == 1){
+        if(HAL_GPIO_ReadPin(GPIOB, R2_AUX_GPIO_Port) == 1){
+          if(HAL_GPIO_ReadPin(GPIOB, R3_AUX_GPIO_Port) == 0){
+            break;
+          }
+        }
+      }
+      Error_Handler();
+    case DISCHARGE:
+      updating_counter = 0;
+      if(HAL_GPIO_ReadPin(GPIOB, R1_AUX_GPIO_Port) == 0){
+        if(HAL_GPIO_ReadPin(GPIOB, R2_AUX_GPIO_Port) == 0){
+          if(HAL_GPIO_ReadPin(GPIOB, R3_AUX_GPIO_Port) == 0){
+            break;
+          }
+        }
+      }
+      Error_Handler();
+    default:
+      Error_Handler();
+  }
+}
+
+//these funcitons use mostly copied code from old main loop -ray
+
+void set_charging(){
+  Status = UPDATING;
+  allRelaysOpen();
+	HAL_GPIO_WritePin(CHARGE_NEG_PORT, CHARGE_NEG_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_SET);
+  //did peter want us to check if the charge pins are properly set before continuing? -ray
+  //if so how do we do this since we dont have aux pins for charge+ and charge-
+  Status = CHARGING;
+}
+
+void set_precharge(){
+  Status = UPDATING;
+  allRelaysOpen();
+	operation = 1;
+	HAL_GPIO_WritePin(HVC_NEG_PORT, HVC_NEG_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PUMP_ENABLE_PORT, PUMP_ENABLE_Pin, GPIO_PIN_SET);
+  Status = PRECHARGE;
+}
+
+void while_operation(){
+  Status = UPDATING;
+  HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_SET);
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_RESET);
+  Status = OPERATION;
+}
+
+void set_discharge(){
+  Status = UPDATING;
+  HAL_Delay(30000); // 30 second delay
+  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+  allRelaysOpen();
+  operation = 0;
+  Status = DISCHARGE;
+}
+
+void Error_Handler(){ //intergrate this with other Error_Handler() function
+  allRelaysOpen();
+  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+}
