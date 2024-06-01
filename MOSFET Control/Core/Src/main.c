@@ -25,8 +25,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 float Read_ADC_Voltage(void);
-void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin);
-void check_low(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin);
+// watch out for running out of onboard memory because of inline
+static inline void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin);
+static inline void check_low(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin);
 
 /* USER CODE END Includes */
 
@@ -144,23 +145,9 @@ void allRelaysOpen() {
 	
 	HAL_Delay(1000);
 
-	// replace all this with check_low() -ray -> DONE
-	check_low(HVC_POS_PORT, HVC_POS_Pin);
-	check_low(HVC_NEG_PORT, HVC_NEG_Pin);
-	check_low(CHARGE_NEG_PORT, CHARGE_NEG_Pin);
-	check_low(CHARGE_POS_PORT, CHARGE_POS_Pin);
-	check_low(PUMP_ENABLE_PORT, PUMP_ENABLE_Pin);
-
-	//add aux checks here -ray -> DONE
-	if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_SET){
-		Error_Handler();
-	}
-	if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin) == GPIO_PIN_SET){
-		Error_Handler();
-	}
-	if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin) == GPIO_PIN_SET){
-		Error_Handler();
-	}
+	check_low(R1_AUX_PORT, R1_AUX_Pin);
+	check_low(R2_AUX_PORT, R2_AUX_Pin);
+	check_low(R3_AUX_PORT, R3_AUX_Pin);
 }
 
 void allDigitalRead() {
@@ -638,7 +625,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 // delays are now built into the checks -ray
-void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){ //
+static inline void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){ //
 	for (int i = 0; i < 5; ++i) {
 		HAL_Delay(100);
         	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
@@ -648,7 +635,7 @@ void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){ //
 	Error_Handler();
 }
 
-void check_low(){
+static inline void check_low(){
 	for (int i = 0; i < 5; ++i) {
 		HAL_Delay(100);
         	if (!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
@@ -700,12 +687,10 @@ void while_operation() {
 	} else {
 		Status = UPDATING;
 		HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_SET);
-		check_high(HVC_POS_PORT, HVC_POS_Pin);
 
 		HAL_Delay(1000); // Wait for 1 second to ensure stability
 
 		HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_RESET);
-		check_low(P_CHARGE_PORT, P_CHARGE_Pin);
 
 		Status = OPERATION; // Set status to OPERATION
 	}
@@ -719,7 +704,6 @@ void set_discharge() {
 	allRelaysOpen(); // Open all relays to ensure system is in a safe state before discharging
 
 	HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
-	check_low(CTRL_OK_GPIO_Port, CTRL_OK_Pin);
 
 	operation = 0; // Reset operation status
 	Status = DISCHARGE; // Set status to DISCHARGE
@@ -730,13 +714,9 @@ void set_charging() {
 	Status = UPDATING;
 	allRelaysOpen();  // Open all relays to ensure the system is in a safe state
 
-	// Set CHARGE_NEG_PIN and check if it is set correctly
 	HAL_GPIO_WritePin(CHARGE_NEG_PORT, CHARGE_NEG_Pin, GPIO_PIN_SET);
-	check(CHARGE_NEG_PORT, CHARGE_NEG_Pin);
 
-	// Set CHARGE_POS_PIN and check if it is set correctly
 	HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_SET);
-	check_high(CHARGE_POS_PORT, CHARGE_POS_Pin);
 
 	Status = CHARGING; // Update system status to CHARGING after successful pin settings
 }
