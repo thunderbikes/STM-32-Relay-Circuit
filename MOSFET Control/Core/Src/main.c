@@ -38,8 +38,6 @@ static inline void check_low(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin);
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PIN_SET_ERROR "Pin set error detected"
-
 #define R1_AUX_PORT GPIOB
 #define R2_AUX_PORT GPIOB
 #define R3_AUX_PORT GPIOB
@@ -125,6 +123,7 @@ void set_discharge(void);
 void set_charging(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 static void MX_CAN2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
@@ -219,6 +218,7 @@ int main(void) {
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
 	MX_TIM2_Init();
+	MX_TIM3_Init();
 	MX_CAN2_Init();
 	MX_SPI1_Init();
 	MX_ADC1_Init();
@@ -445,6 +445,47 @@ static void MX_TIM2_Init(void) {
 	/* USER CODE END TIM2_Init 2 */
 
 }
+// 5 second timer for CANBUS battery voltage
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 9599;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 49999;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
 
 /**
  * @brief GPIO Initialization Function
@@ -529,8 +570,7 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
-//to my knowledge, this interrupt only checks 3 AUX pins not pump, charge, etc..
-//I dont know how to set up interupt as on a timer -ray)
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // Check if the interrupt comes from TIM2
 	if(htim->Instance == TIM3){
@@ -635,17 +675,18 @@ static inline void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){ //
 	Error_Handler();
 }
 
-static inline void check_low(){
-	for (int i = 0; i < 5; ++i) {
-		HAL_Delay(100);
-        	if (!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
-			return;
-		}
-	}
-	Error_Handler();
+static inline void check_low(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
+    for (int i = 0; i < 5; ++i) {
+        HAL_Delay(100);
+        if (!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
+            return;
+        }
+    }
+    Error_Handler(); // Trigger error handler if the pin state is not low after retries
 }
 
-//these funcitons use mostly copied code from old main loop -ray
+
+//these functions use mostly copied code from old main loop -ray
 void set_precharge() {
 	uint32_t start_tick = HAL_GetTick(); // in milliseconds
 	uint32_t timeout = 30000; // Timeout set for 30000 milliseconds or 30 seconds
@@ -655,7 +696,9 @@ void set_precharge() {
 	Status = UPDATING;
 	allRelaysOpen();
 	HAL_GPIO_WritePin(HVC_NEG_PORT, HVC_NEG_Pin, GPIO_PIN_SET);
+	check_high(R2_AUX_PORT, R2_AUX_Pin);
 	HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_SET);
+	check_high(R3_AUX_PORT, R3_AUX_Pin);
 
 	while (1) {
 		hv_sense_voltage = Read_ADC_Voltage();
@@ -687,10 +730,12 @@ void while_operation() {
 	} else {
 		Status = UPDATING;
 		HAL_GPIO_WritePin(HVC_POS_PORT, HVC_POS_Pin, GPIO_PIN_SET);
+		check_high(R1_AUX_PORT, R1_AUX_Pin);
 
 		HAL_Delay(1000); // Wait for 1 second to ensure stability
 
 		HAL_GPIO_WritePin(P_CHARGE_PORT, P_CHARGE_Pin, GPIO_PIN_RESET);
+		check_low(R3_AUX_PORT, R3_AUX_Pin);
 
 		Status = OPERATION; // Set status to OPERATION
 	}
