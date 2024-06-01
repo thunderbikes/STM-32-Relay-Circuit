@@ -55,7 +55,8 @@ Install CubeIDE and flash [main.c](MOSFET%20Control/Core/Src/main.c) onto STM32.
 
 ### `allRelaysOpen()`
 
-Opens all relays to avoid conflicts when switching between states.
+- Opens all relays to avoid conflicts when switching between states.
+- Safety checks in place to ensure relays are actually open
 
 ### `allDigitalRead()`
 
@@ -64,6 +65,15 @@ Reads digital inputs for charge, ignition, and directional signals.
 ### `allAuxDigitalRead()`
 
 Reads digital inputs for the three relay signals.
+
+### `check_high()`
+
+- Runs 5 checks at 100ms apart if pin is supposed to be high
+- Enters `Error_Handler()` if cannot pass checks
+
+### `check_low()`
+
+Same as `check_high()` with flipped boolean
 
 ### `HAL_TIM_PeriodElapsedCallback()`
 
