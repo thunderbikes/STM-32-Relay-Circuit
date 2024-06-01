@@ -84,6 +84,8 @@ int operation = 0;
 int ignition = 0;
 int charging = 0;
 
+uint32_t updating_start_tick = 0;
+
 //all possible status
 // #define UPDATING = 0;
 // #define SHUTDOWN = 1;
@@ -398,6 +400,7 @@ static void MX_SPI1_Init(void) {
  * @param None
  * @retval None
  */
+//Timer for 500ms for interrupts
 static void MX_TIM2_Init(void) {
 
 	/* USER CODE BEGIN TIM2_Init 0 */
@@ -526,14 +529,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		if (HAL_GPIO_ReadPin(SHDWN_ST_PORT, SHDWN_ST_Pin) == GPIO_PIN_SET) {
 			Status = SHUTDOWN;
 		}
+
 		switch (Status) {
 		case UPDATING:
-			updating_counter++;
-			if (updating_counter > 100) { //100 is arbitrary value, please account for 30 sec discharge when modifying -ray
-				Status = SHUTDOWN;
-			} else {
-				break;
+			if (updating_start_tick == 0) { // Initialize start tick on first entry
+				updating_start_tick = HAL_GetTick();
 			}
+				// Check if 30 seconds have elapsed
+			if ((HAL_GetTick() - updating_start_tick) > 30000) {
+				updating_start_tick = 0;  // Reset for next use
+				Error_Handler();
+			}
+			break;
 		case SHUTDOWN:
 			if (HAL_GPIO_ReadPin(IMD_OK_L_PORT, IMD_OK_L_Pin)
 					== GPIO_PIN_RESET) {
@@ -546,7 +553,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			}
 			Error_Handler();
 		case STANDBY:
-			updating_counter = 0;
 			//i forgot which AUX pins we need to check for standby -ray
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin)
@@ -559,7 +565,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			}
 			Error_Handler();
 		case CHARGING:
-			updating_counter = 0;
 			//i dont know which AUX pins we need to check for charging -ray
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin)
@@ -572,7 +577,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			}
 			Error_Handler();
 		case PRECHARGE:
-			updating_counter = 0;
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin) == GPIO_PIN_SET) { //also 3 if statements seems a bit more readable
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
@@ -583,7 +587,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			}
 			Error_Handler();
 		case OPERATION:
-			updating_counter = 0;
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_SET) {
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin) == GPIO_PIN_SET) {
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
@@ -594,7 +597,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			}
 			Error_Handler();
 		case DISCHARGE:
-			updating_counter = 0;
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) {
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R3_AUX_Pin)
 						== GPIO_PIN_RESET) {

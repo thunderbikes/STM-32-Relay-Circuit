@@ -27,25 +27,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0000606c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000dce8  00000000  00000000  00006095  2**0
+ 12 .debug_info   0000dcf9  00000000  00000000  00006095  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00002217  00000000  00000000  00013d7d  2**0
+ 13 .debug_abbrev 00002217  00000000  00000000  00013d8e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000eb0  00000000  00000000  00015f98  2**3
+ 14 .debug_aranges 00000eb0  00000000  00000000  00015fa8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_rnglists 00000b52  00000000  00000000  00016e48  2**0
+ 15 .debug_rnglists 00000b52  00000000  00000000  00016e58  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0001faa2  00000000  00000000  0001799a  2**0
+ 16 .debug_macro  0001faa2  00000000  00000000  000179aa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000fbb0  00000000  00000000  0003743c  2**0
+ 17 .debug_line   0000fbb3  00000000  00000000  0003744c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000c0933  00000000  00000000  00046fec  2**0
+ 18 .debug_str    000c093c  00000000  00000000  00046fff  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  0010791f  2**0
+ 19 .comment      00000043  00000000  00000000  0010793b  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004698  00000000  00000000  00107964  2**2
+ 20 .debug_frame  00004698  00000000  00000000  00107980  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000082  00000000  00000000  0010bffc  2**0
+ 21 .debug_line_str 00000082  00000000  00000000  0010c018  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1442,7 +1442,7 @@ int main(void) {
 		if (Reading_Pin('I') == 1 && operation == 0) {
  8001000:	e7e0      	b.n	8000fc4 <main+0x20>
  8001002:	bf00      	nop
- 8001004:	2000008c 	.word	0x2000008c
+ 8001004:	20000088 	.word	0x20000088
 
 08001008 <SystemClock_Config>:
 
@@ -1832,11 +1832,11 @@ static void MX_SPI1_Init(void) {
  800120c:	40013000 	.word	0x40013000
 
 08001210 <MX_TIM2_Init>:
-/**
  * @brief TIM2 Initialization Function
  * @param None
  * @retval None
  */
+//Timer for 500ms for interrupts
 static void MX_TIM2_Init(void) {
  8001210:	b580      	push	{r7, lr}
  8001212:	b086      	sub	sp, #24
@@ -2193,319 +2193,314 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  8001424:	687b      	ldr	r3, [r7, #4]
  8001426:	681b      	ldr	r3, [r3, #0]
  8001428:	f1b3 4f80 	cmp.w	r3, #1073741824	@ 0x40000000
- 800142c:	f040 80da 	bne.w	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
+ 800142c:	f040 80d8 	bne.w	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
 		if (HAL_GPIO_ReadPin(SHDWN_ST_PORT, SHDWN_ST_Pin) == GPIO_PIN_SET) {
  8001430:	f44f 7100 	mov.w	r1, #512	@ 0x200
- 8001434:	486d      	ldr	r0, [pc, #436]	@ (80015ec <HAL_TIM_PeriodElapsedCallback+0x1d0>)
+ 8001434:	486c      	ldr	r0, [pc, #432]	@ (80015e8 <HAL_TIM_PeriodElapsedCallback+0x1cc>)
  8001436:	f001 fc2f 	bl	8002c98 <HAL_GPIO_ReadPin>
  800143a:	4603      	mov	r3, r0
  800143c:	2b01      	cmp	r3, #1
  800143e:	d102      	bne.n	8001446 <HAL_TIM_PeriodElapsedCallback+0x2a>
 			Status = SHUTDOWN;
- 8001440:	4b6b      	ldr	r3, [pc, #428]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
+ 8001440:	4b6a      	ldr	r3, [pc, #424]	@ (80015ec <HAL_TIM_PeriodElapsedCallback+0x1d0>)
  8001442:	2201      	movs	r2, #1
  8001444:	701a      	strb	r2, [r3, #0]
 		}
+
 		switch (Status) {
- 8001446:	4b6a      	ldr	r3, [pc, #424]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
+ 8001446:	4b69      	ldr	r3, [pc, #420]	@ (80015ec <HAL_TIM_PeriodElapsedCallback+0x1d0>)
  8001448:	781b      	ldrb	r3, [r3, #0]
  800144a:	2b06      	cmp	r3, #6
- 800144c:	f200 80bc 	bhi.w	80015c8 <HAL_TIM_PeriodElapsedCallback+0x1ac>
+ 800144c:	f200 80ba 	bhi.w	80015c4 <HAL_TIM_PeriodElapsedCallback+0x1a8>
  8001450:	a201      	add	r2, pc, #4	@ (adr r2, 8001458 <HAL_TIM_PeriodElapsedCallback+0x3c>)
  8001452:	f852 f023 	ldr.w	pc, [r2, r3, lsl #2]
  8001456:	bf00      	nop
  8001458:	08001475 	.word	0x08001475
- 800145c:	0800148f 	.word	0x0800148f
- 8001460:	080014c5 	.word	0x080014c5
- 8001464:	080014f9 	.word	0x080014f9
- 8001468:	0800152d 	.word	0x0800152d
- 800146c:	08001561 	.word	0x08001561
- 8001470:	08001595 	.word	0x08001595
+ 800145c:	080014a9 	.word	0x080014a9
+ 8001460:	080014df 	.word	0x080014df
+ 8001464:	0800150d 	.word	0x0800150d
+ 8001468:	0800153b 	.word	0x0800153b
+ 800146c:	08001569 	.word	0x08001569
+ 8001470:	08001597 	.word	0x08001597
 		case UPDATING:
-			updating_counter++;
- 8001474:	4b5f      	ldr	r3, [pc, #380]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+			if (updating_start_tick == 0) { // Initialize start tick on first entry
+ 8001474:	4b5e      	ldr	r3, [pc, #376]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
  8001476:	681b      	ldr	r3, [r3, #0]
- 8001478:	3301      	adds	r3, #1
- 800147a:	4a5e      	ldr	r2, [pc, #376]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 800147c:	6013      	str	r3, [r2, #0]
-			if (updating_counter > 100) { //100 is arbitrary value, please account for 30 sec discharge when modifying -ray
- 800147e:	4b5d      	ldr	r3, [pc, #372]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 8001480:	681b      	ldr	r3, [r3, #0]
- 8001482:	2b64      	cmp	r3, #100	@ 0x64
- 8001484:	f340 80a3 	ble.w	80015ce <HAL_TIM_PeriodElapsedCallback+0x1b2>
-				Status = SHUTDOWN;
- 8001488:	4b59      	ldr	r3, [pc, #356]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
- 800148a:	2201      	movs	r2, #1
- 800148c:	701a      	strb	r2, [r3, #0]
-			} else {
-				break;
+ 8001478:	2b00      	cmp	r3, #0
+ 800147a:	d104      	bne.n	8001486 <HAL_TIM_PeriodElapsedCallback+0x6a>
+				updating_start_tick = HAL_GetTick();
+ 800147c:	f000 fc8c 	bl	8001d98 <HAL_GetTick>
+ 8001480:	4603      	mov	r3, r0
+ 8001482:	4a5b      	ldr	r2, [pc, #364]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
+ 8001484:	6013      	str	r3, [r2, #0]
 			}
+				// Check if 30 seconds have elapsed
+			if ((HAL_GetTick() - updating_start_tick) > 30000) {
+ 8001486:	f000 fc87 	bl	8001d98 <HAL_GetTick>
+ 800148a:	4602      	mov	r2, r0
+ 800148c:	4b58      	ldr	r3, [pc, #352]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
+ 800148e:	681b      	ldr	r3, [r3, #0]
+ 8001490:	1ad3      	subs	r3, r2, r3
+ 8001492:	f247 5230 	movw	r2, #30000	@ 0x7530
+ 8001496:	4293      	cmp	r3, r2
+ 8001498:	f240 8097 	bls.w	80015ca <HAL_TIM_PeriodElapsedCallback+0x1ae>
+				updating_start_tick = 0;  // Reset for next use
+ 800149c:	4b54      	ldr	r3, [pc, #336]	@ (80015f0 <HAL_TIM_PeriodElapsedCallback+0x1d4>)
+ 800149e:	2200      	movs	r2, #0
+ 80014a0:	601a      	str	r2, [r3, #0]
+				Error_Handler();
+ 80014a2:	f000 f9d1 	bl	8001848 <Error_Handler>
+			}
+			break;
+ 80014a6:	e090      	b.n	80015ca <HAL_TIM_PeriodElapsedCallback+0x1ae>
 		case SHUTDOWN:
 			if (HAL_GPIO_ReadPin(IMD_OK_L_PORT, IMD_OK_L_Pin)
- 800148e:	2102      	movs	r1, #2
- 8001490:	4859      	ldr	r0, [pc, #356]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001492:	f001 fc01 	bl	8002c98 <HAL_GPIO_ReadPin>
- 8001496:	4603      	mov	r3, r0
- 8001498:	2b00      	cmp	r3, #0
- 800149a:	d103      	bne.n	80014a4 <HAL_TIM_PeriodElapsedCallback+0x88>
+ 80014a8:	2102      	movs	r1, #2
+ 80014aa:	4852      	ldr	r0, [pc, #328]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80014ac:	f001 fbf4 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80014b0:	4603      	mov	r3, r0
+ 80014b2:	2b00      	cmp	r3, #0
+ 80014b4:	d103      	bne.n	80014be <HAL_TIM_PeriodElapsedCallback+0xa2>
 					== GPIO_PIN_RESET) {
 				printf("IMD NOT OK.\n");
- 800149c:	4857      	ldr	r0, [pc, #348]	@ (80015fc <HAL_TIM_PeriodElapsedCallback+0x1e0>)
- 800149e:	f002 fde7 	bl	8004070 <puts>
- 80014a2:	e00d      	b.n	80014c0 <HAL_TIM_PeriodElapsedCallback+0xa4>
+ 80014b6:	4850      	ldr	r0, [pc, #320]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
+ 80014b8:	f002 fdda 	bl	8004070 <puts>
+ 80014bc:	e00d      	b.n	80014da <HAL_TIM_PeriodElapsedCallback+0xbe>
 			} else if (HAL_GPIO_ReadPin(BMS_OK_L_PORT, BMS_OK_L_Pin)
- 80014a4:	2101      	movs	r1, #1
- 80014a6:	4854      	ldr	r0, [pc, #336]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80014a8:	f001 fbf6 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80014ac:	4603      	mov	r3, r0
- 80014ae:	2b00      	cmp	r3, #0
- 80014b0:	d103      	bne.n	80014ba <HAL_TIM_PeriodElapsedCallback+0x9e>
+ 80014be:	2101      	movs	r1, #1
+ 80014c0:	484c      	ldr	r0, [pc, #304]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80014c2:	f001 fbe9 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80014c6:	4603      	mov	r3, r0
+ 80014c8:	2b00      	cmp	r3, #0
+ 80014ca:	d103      	bne.n	80014d4 <HAL_TIM_PeriodElapsedCallback+0xb8>
 					== GPIO_PIN_RESET) {
 				printf("BMS NOT OK.\n");
- 80014b2:	4853      	ldr	r0, [pc, #332]	@ (8001600 <HAL_TIM_PeriodElapsedCallback+0x1e4>)
- 80014b4:	f002 fddc 	bl	8004070 <puts>
- 80014b8:	e002      	b.n	80014c0 <HAL_TIM_PeriodElapsedCallback+0xa4>
+ 80014cc:	484b      	ldr	r0, [pc, #300]	@ (80015fc <HAL_TIM_PeriodElapsedCallback+0x1e0>)
+ 80014ce:	f002 fdcf 	bl	8004070 <puts>
+ 80014d2:	e002      	b.n	80014da <HAL_TIM_PeriodElapsedCallback+0xbe>
 			} else {
 				printf("Cause of shutdown is unknown.\n");
- 80014ba:	4852      	ldr	r0, [pc, #328]	@ (8001604 <HAL_TIM_PeriodElapsedCallback+0x1e8>)
- 80014bc:	f002 fdd8 	bl	8004070 <puts>
+ 80014d4:	484a      	ldr	r0, [pc, #296]	@ (8001600 <HAL_TIM_PeriodElapsedCallback+0x1e4>)
+ 80014d6:	f002 fdcb 	bl	8004070 <puts>
 			}
 			Error_Handler();
- 80014c0:	f000 f9c2 	bl	8001848 <Error_Handler>
+ 80014da:	f000 f9b5 	bl	8001848 <Error_Handler>
 		case STANDBY:
-			updating_counter = 0;
- 80014c4:	4b4b      	ldr	r3, [pc, #300]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 80014c6:	2200      	movs	r2, #0
- 80014c8:	601a      	str	r2, [r3, #0]
 			//i forgot which AUX pins we need to check for standby -ray
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
- 80014ca:	2110      	movs	r1, #16
- 80014cc:	484a      	ldr	r0, [pc, #296]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80014ce:	f001 fbe3 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80014d2:	4603      	mov	r3, r0
- 80014d4:	2b00      	cmp	r3, #0
- 80014d6:	d10d      	bne.n	80014f4 <HAL_TIM_PeriodElapsedCallback+0xd8>
+ 80014de:	2110      	movs	r1, #16
+ 80014e0:	4844      	ldr	r0, [pc, #272]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80014e2:	f001 fbd9 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80014e6:	4603      	mov	r3, r0
+ 80014e8:	2b00      	cmp	r3, #0
+ 80014ea:	d10d      	bne.n	8001508 <HAL_TIM_PeriodElapsedCallback+0xec>
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin)
- 80014d8:	2120      	movs	r1, #32
- 80014da:	4847      	ldr	r0, [pc, #284]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80014dc:	f001 fbdc 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80014e0:	4603      	mov	r3, r0
- 80014e2:	2b00      	cmp	r3, #0
- 80014e4:	d106      	bne.n	80014f4 <HAL_TIM_PeriodElapsedCallback+0xd8>
+ 80014ec:	2120      	movs	r1, #32
+ 80014ee:	4841      	ldr	r0, [pc, #260]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80014f0:	f001 fbd2 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80014f4:	4603      	mov	r3, r0
+ 80014f6:	2b00      	cmp	r3, #0
+ 80014f8:	d106      	bne.n	8001508 <HAL_TIM_PeriodElapsedCallback+0xec>
 						== GPIO_PIN_RESET) { //also 3 if statements seems a bit more readable
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
- 80014e6:	2140      	movs	r1, #64	@ 0x40
- 80014e8:	4843      	ldr	r0, [pc, #268]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80014ea:	f001 fbd5 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80014ee:	4603      	mov	r3, r0
- 80014f0:	2b00      	cmp	r3, #0
- 80014f2:	d06e      	beq.n	80015d2 <HAL_TIM_PeriodElapsedCallback+0x1b6>
+ 80014fa:	2140      	movs	r1, #64	@ 0x40
+ 80014fc:	483d      	ldr	r0, [pc, #244]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80014fe:	f001 fbcb 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 8001502:	4603      	mov	r3, r0
+ 8001504:	2b00      	cmp	r3, #0
+ 8001506:	d062      	beq.n	80015ce <HAL_TIM_PeriodElapsedCallback+0x1b2>
 							== GPIO_PIN_RESET) {
 						break;
 					}
 				}
 			}
 			Error_Handler();
- 80014f4:	f000 f9a8 	bl	8001848 <Error_Handler>
+ 8001508:	f000 f99e 	bl	8001848 <Error_Handler>
 		case CHARGING:
-			updating_counter = 0;
- 80014f8:	4b3e      	ldr	r3, [pc, #248]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 80014fa:	2200      	movs	r2, #0
- 80014fc:	601a      	str	r2, [r3, #0]
 			//i dont know which AUX pins we need to check for charging -ray
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
- 80014fe:	2110      	movs	r1, #16
- 8001500:	483d      	ldr	r0, [pc, #244]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001502:	f001 fbc9 	bl	8002c98 <HAL_GPIO_ReadPin>
- 8001506:	4603      	mov	r3, r0
- 8001508:	2b00      	cmp	r3, #0
- 800150a:	d10d      	bne.n	8001528 <HAL_TIM_PeriodElapsedCallback+0x10c>
-				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin)
- 800150c:	2120      	movs	r1, #32
- 800150e:	483a      	ldr	r0, [pc, #232]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
+ 800150c:	2110      	movs	r1, #16
+ 800150e:	4839      	ldr	r0, [pc, #228]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
  8001510:	f001 fbc2 	bl	8002c98 <HAL_GPIO_ReadPin>
  8001514:	4603      	mov	r3, r0
  8001516:	2b00      	cmp	r3, #0
- 8001518:	d106      	bne.n	8001528 <HAL_TIM_PeriodElapsedCallback+0x10c>
-						== GPIO_PIN_RESET) { //also 3 if statements seems a bit more readable
-					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
- 800151a:	2140      	movs	r1, #64	@ 0x40
- 800151c:	4836      	ldr	r0, [pc, #216]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
+ 8001518:	d10d      	bne.n	8001536 <HAL_TIM_PeriodElapsedCallback+0x11a>
+				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin)
+ 800151a:	2120      	movs	r1, #32
+ 800151c:	4835      	ldr	r0, [pc, #212]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
  800151e:	f001 fbbb 	bl	8002c98 <HAL_GPIO_ReadPin>
  8001522:	4603      	mov	r3, r0
  8001524:	2b00      	cmp	r3, #0
- 8001526:	d056      	beq.n	80015d6 <HAL_TIM_PeriodElapsedCallback+0x1ba>
+ 8001526:	d106      	bne.n	8001536 <HAL_TIM_PeriodElapsedCallback+0x11a>
+						== GPIO_PIN_RESET) { //also 3 if statements seems a bit more readable
+					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
+ 8001528:	2140      	movs	r1, #64	@ 0x40
+ 800152a:	4832      	ldr	r0, [pc, #200]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800152c:	f001 fbb4 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 8001530:	4603      	mov	r3, r0
+ 8001532:	2b00      	cmp	r3, #0
+ 8001534:	d04d      	beq.n	80015d2 <HAL_TIM_PeriodElapsedCallback+0x1b6>
 							== GPIO_PIN_RESET) {
 						break;
 					}
 				}
 			}
 			Error_Handler();
- 8001528:	f000 f98e 	bl	8001848 <Error_Handler>
+ 8001536:	f000 f987 	bl	8001848 <Error_Handler>
 		case PRECHARGE:
-			updating_counter = 0;
- 800152c:	4b31      	ldr	r3, [pc, #196]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 800152e:	2200      	movs	r2, #0
- 8001530:	601a      	str	r2, [r3, #0]
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) { //please double check all AUX pins -ray
- 8001532:	2110      	movs	r1, #16
- 8001534:	4830      	ldr	r0, [pc, #192]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001536:	f001 fbaf 	bl	8002c98 <HAL_GPIO_ReadPin>
- 800153a:	4603      	mov	r3, r0
- 800153c:	2b00      	cmp	r3, #0
- 800153e:	d10d      	bne.n	800155c <HAL_TIM_PeriodElapsedCallback+0x140>
+ 800153a:	2110      	movs	r1, #16
+ 800153c:	482d      	ldr	r0, [pc, #180]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800153e:	f001 fbab 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 8001542:	4603      	mov	r3, r0
+ 8001544:	2b00      	cmp	r3, #0
+ 8001546:	d10d      	bne.n	8001564 <HAL_TIM_PeriodElapsedCallback+0x148>
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin) == GPIO_PIN_SET) { //also 3 if statements seems a bit more readable
- 8001540:	2120      	movs	r1, #32
- 8001542:	482d      	ldr	r0, [pc, #180]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001544:	f001 fba8 	bl	8002c98 <HAL_GPIO_ReadPin>
- 8001548:	4603      	mov	r3, r0
- 800154a:	2b01      	cmp	r3, #1
- 800154c:	d106      	bne.n	800155c <HAL_TIM_PeriodElapsedCallback+0x140>
+ 8001548:	2120      	movs	r1, #32
+ 800154a:	482a      	ldr	r0, [pc, #168]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800154c:	f001 fba4 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 8001550:	4603      	mov	r3, r0
+ 8001552:	2b01      	cmp	r3, #1
+ 8001554:	d106      	bne.n	8001564 <HAL_TIM_PeriodElapsedCallback+0x148>
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
- 800154e:	2140      	movs	r1, #64	@ 0x40
- 8001550:	4829      	ldr	r0, [pc, #164]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001552:	f001 fba1 	bl	8002c98 <HAL_GPIO_ReadPin>
- 8001556:	4603      	mov	r3, r0
- 8001558:	2b01      	cmp	r3, #1
- 800155a:	d03e      	beq.n	80015da <HAL_TIM_PeriodElapsedCallback+0x1be>
+ 8001556:	2140      	movs	r1, #64	@ 0x40
+ 8001558:	4826      	ldr	r0, [pc, #152]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800155a:	f001 fb9d 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 800155e:	4603      	mov	r3, r0
+ 8001560:	2b01      	cmp	r3, #1
+ 8001562:	d038      	beq.n	80015d6 <HAL_TIM_PeriodElapsedCallback+0x1ba>
 							== GPIO_PIN_SET) {
 						break;
 					}
 				}
 			}
 			Error_Handler();
- 800155c:	f000 f974 	bl	8001848 <Error_Handler>
+ 8001564:	f000 f970 	bl	8001848 <Error_Handler>
 		case OPERATION:
-			updating_counter = 0;
- 8001560:	4b24      	ldr	r3, [pc, #144]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 8001562:	2200      	movs	r2, #0
- 8001564:	601a      	str	r2, [r3, #0]
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_SET) {
- 8001566:	2110      	movs	r1, #16
- 8001568:	4823      	ldr	r0, [pc, #140]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 800156a:	f001 fb95 	bl	8002c98 <HAL_GPIO_ReadPin>
- 800156e:	4603      	mov	r3, r0
- 8001570:	2b01      	cmp	r3, #1
- 8001572:	d10d      	bne.n	8001590 <HAL_TIM_PeriodElapsedCallback+0x174>
+ 8001568:	2110      	movs	r1, #16
+ 800156a:	4822      	ldr	r0, [pc, #136]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800156c:	f001 fb94 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 8001570:	4603      	mov	r3, r0
+ 8001572:	2b01      	cmp	r3, #1
+ 8001574:	d10d      	bne.n	8001592 <HAL_TIM_PeriodElapsedCallback+0x176>
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R2_AUX_Pin) == GPIO_PIN_SET) {
- 8001574:	2120      	movs	r1, #32
- 8001576:	4820      	ldr	r0, [pc, #128]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001578:	f001 fb8e 	bl	8002c98 <HAL_GPIO_ReadPin>
- 800157c:	4603      	mov	r3, r0
- 800157e:	2b01      	cmp	r3, #1
- 8001580:	d106      	bne.n	8001590 <HAL_TIM_PeriodElapsedCallback+0x174>
+ 8001576:	2120      	movs	r1, #32
+ 8001578:	481e      	ldr	r0, [pc, #120]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800157a:	f001 fb8d 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 800157e:	4603      	mov	r3, r0
+ 8001580:	2b01      	cmp	r3, #1
+ 8001582:	d106      	bne.n	8001592 <HAL_TIM_PeriodElapsedCallback+0x176>
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
- 8001582:	2140      	movs	r1, #64	@ 0x40
- 8001584:	481c      	ldr	r0, [pc, #112]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 8001586:	f001 fb87 	bl	8002c98 <HAL_GPIO_ReadPin>
- 800158a:	4603      	mov	r3, r0
- 800158c:	2b00      	cmp	r3, #0
- 800158e:	d026      	beq.n	80015de <HAL_TIM_PeriodElapsedCallback+0x1c2>
+ 8001584:	2140      	movs	r1, #64	@ 0x40
+ 8001586:	481b      	ldr	r0, [pc, #108]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 8001588:	f001 fb86 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 800158c:	4603      	mov	r3, r0
+ 800158e:	2b00      	cmp	r3, #0
+ 8001590:	d023      	beq.n	80015da <HAL_TIM_PeriodElapsedCallback+0x1be>
 							== GPIO_PIN_RESET) {
 						break;
 					}
 				}
 			}
 			Error_Handler();
- 8001590:	f000 f95a 	bl	8001848 <Error_Handler>
+ 8001592:	f000 f959 	bl	8001848 <Error_Handler>
 		case DISCHARGE:
-			updating_counter = 0;
- 8001594:	4b17      	ldr	r3, [pc, #92]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
- 8001596:	2200      	movs	r2, #0
- 8001598:	601a      	str	r2, [r3, #0]
 			if (HAL_GPIO_ReadPin(R1_AUX_PORT, R1_AUX_Pin) == GPIO_PIN_RESET) {
- 800159a:	2110      	movs	r1, #16
- 800159c:	4816      	ldr	r0, [pc, #88]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 800159e:	f001 fb7b 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80015a2:	4603      	mov	r3, r0
- 80015a4:	2b00      	cmp	r3, #0
- 80015a6:	d10d      	bne.n	80015c4 <HAL_TIM_PeriodElapsedCallback+0x1a8>
+ 8001596:	2110      	movs	r1, #16
+ 8001598:	4816      	ldr	r0, [pc, #88]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 800159a:	f001 fb7d 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 800159e:	4603      	mov	r3, r0
+ 80015a0:	2b00      	cmp	r3, #0
+ 80015a2:	d10d      	bne.n	80015c0 <HAL_TIM_PeriodElapsedCallback+0x1a4>
 				if (HAL_GPIO_ReadPin(R2_AUX_PORT, R3_AUX_Pin)
- 80015a8:	2140      	movs	r1, #64	@ 0x40
- 80015aa:	4813      	ldr	r0, [pc, #76]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80015ac:	f001 fb74 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80015b0:	4603      	mov	r3, r0
- 80015b2:	2b00      	cmp	r3, #0
- 80015b4:	d106      	bne.n	80015c4 <HAL_TIM_PeriodElapsedCallback+0x1a8>
+ 80015a4:	2140      	movs	r1, #64	@ 0x40
+ 80015a6:	4813      	ldr	r0, [pc, #76]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80015a8:	f001 fb76 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80015ac:	4603      	mov	r3, r0
+ 80015ae:	2b00      	cmp	r3, #0
+ 80015b0:	d106      	bne.n	80015c0 <HAL_TIM_PeriodElapsedCallback+0x1a4>
 						== GPIO_PIN_RESET) {
 					if (HAL_GPIO_ReadPin(R3_AUX_PORT, R3_AUX_Pin)
- 80015b6:	2140      	movs	r1, #64	@ 0x40
- 80015b8:	480f      	ldr	r0, [pc, #60]	@ (80015f8 <HAL_TIM_PeriodElapsedCallback+0x1dc>)
- 80015ba:	f001 fb6d 	bl	8002c98 <HAL_GPIO_ReadPin>
- 80015be:	4603      	mov	r3, r0
- 80015c0:	2b00      	cmp	r3, #0
- 80015c2:	d00e      	beq.n	80015e2 <HAL_TIM_PeriodElapsedCallback+0x1c6>
+ 80015b2:	2140      	movs	r1, #64	@ 0x40
+ 80015b4:	480f      	ldr	r0, [pc, #60]	@ (80015f4 <HAL_TIM_PeriodElapsedCallback+0x1d8>)
+ 80015b6:	f001 fb6f 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 80015ba:	4603      	mov	r3, r0
+ 80015bc:	2b00      	cmp	r3, #0
+ 80015be:	d00e      	beq.n	80015de <HAL_TIM_PeriodElapsedCallback+0x1c2>
 							== GPIO_PIN_RESET) {
 						break;
 					}
 				}
 			}
 			Error_Handler();
- 80015c4:	f000 f940 	bl	8001848 <Error_Handler>
+ 80015c0:	f000 f942 	bl	8001848 <Error_Handler>
 		default:
 			Error_Handler();
- 80015c8:	f000 f93e 	bl	8001848 <Error_Handler>
+ 80015c4:	f000 f940 	bl	8001848 <Error_Handler>
 		}
 	}
 }
- 80015cc:	e00a      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
-				break;
+ 80015c8:	e00a      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
+			break;
+ 80015ca:	bf00      	nop
+ 80015cc:	e008      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
+						break;
  80015ce:	bf00      	nop
- 80015d0:	e008      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
+ 80015d0:	e006      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
 						break;
  80015d2:	bf00      	nop
- 80015d4:	e006      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
+ 80015d4:	e004      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
 						break;
  80015d6:	bf00      	nop
- 80015d8:	e004      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
+ 80015d8:	e002      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
 						break;
  80015da:	bf00      	nop
- 80015dc:	e002      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
+ 80015dc:	e000      	b.n	80015e0 <HAL_TIM_PeriodElapsedCallback+0x1c4>
 						break;
  80015de:	bf00      	nop
- 80015e0:	e000      	b.n	80015e4 <HAL_TIM_PeriodElapsedCallback+0x1c8>
-						break;
- 80015e2:	bf00      	nop
 }
- 80015e4:	bf00      	nop
- 80015e6:	3708      	adds	r7, #8
- 80015e8:	46bd      	mov	sp, r7
- 80015ea:	bd80      	pop	{r7, pc}
- 80015ec:	40020000 	.word	0x40020000
- 80015f0:	20000000 	.word	0x20000000
- 80015f4:	20000088 	.word	0x20000088
- 80015f8:	40020400 	.word	0x40020400
- 80015fc:	080047a4 	.word	0x080047a4
- 8001600:	080047b0 	.word	0x080047b0
- 8001604:	080047bc 	.word	0x080047bc
+ 80015e0:	bf00      	nop
+ 80015e2:	3708      	adds	r7, #8
+ 80015e4:	46bd      	mov	sp, r7
+ 80015e6:	bd80      	pop	{r7, pc}
+ 80015e8:	40020000 	.word	0x40020000
+ 80015ec:	20000000 	.word	0x20000000
+ 80015f0:	2000008c 	.word	0x2000008c
+ 80015f4:	40020400 	.word	0x40020400
+ 80015f8:	080047a4 	.word	0x080047a4
+ 80015fc:	080047b0 	.word	0x080047b0
+ 8001600:	080047bc 	.word	0x080047bc
 
-08001608 <check_and_handle_pin_state>:
+08001604 <check_and_handle_pin_state>:
 static inline void check_and_handle_pin_state(GPIO_TypeDef *GPIOx,
 		uint16_t GPIO_Pin) {
- 8001608:	b580      	push	{r7, lr}
- 800160a:	b082      	sub	sp, #8
- 800160c:	af00      	add	r7, sp, #0
- 800160e:	6078      	str	r0, [r7, #4]
- 8001610:	460b      	mov	r3, r1
- 8001612:	807b      	strh	r3, [r7, #2]
+ 8001604:	b580      	push	{r7, lr}
+ 8001606:	b082      	sub	sp, #8
+ 8001608:	af00      	add	r7, sp, #0
+ 800160a:	6078      	str	r0, [r7, #4]
+ 800160c:	460b      	mov	r3, r1
+ 800160e:	807b      	strh	r3, [r7, #2]
 	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) != GPIO_PIN_SET) {
- 8001614:	887b      	ldrh	r3, [r7, #2]
- 8001616:	4619      	mov	r1, r3
- 8001618:	6878      	ldr	r0, [r7, #4]
- 800161a:	f001 fb3d 	bl	8002c98 <HAL_GPIO_ReadPin>
- 800161e:	4603      	mov	r3, r0
- 8001620:	2b01      	cmp	r3, #1
- 8001622:	d002      	beq.n	800162a <check_and_handle_pin_state+0x22>
+ 8001610:	887b      	ldrh	r3, [r7, #2]
+ 8001612:	4619      	mov	r1, r3
+ 8001614:	6878      	ldr	r0, [r7, #4]
+ 8001616:	f001 fb3f 	bl	8002c98 <HAL_GPIO_ReadPin>
+ 800161a:	4603      	mov	r3, r0
+ 800161c:	2b01      	cmp	r3, #1
+ 800161e:	d002      	beq.n	8001626 <check_and_handle_pin_state+0x22>
 		//print("%s at %s: %d\n", PIN_SET_ERROR, __FILE__, __LINE__); // Optional: Log the error with file and line info
 		Error_Handler();
- 8001624:	f000 f910 	bl	8001848 <Error_Handler>
+ 8001620:	f000 f912 	bl	8001848 <Error_Handler>
 		return;
- 8001628:	bf00      	nop
+ 8001624:	bf00      	nop
 	}
 }
- 800162a:	3708      	adds	r7, #8
- 800162c:	46bd      	mov	sp, r7
- 800162e:	bd80      	pop	{r7, pc}
+ 8001626:	3708      	adds	r7, #8
+ 8001628:	46bd      	mov	sp, r7
+ 800162a:	bd80      	pop	{r7, pc}
+ 800162c:	0000      	movs	r0, r0
+	...
 
 08001630 <set_precharge>:
 
@@ -2648,7 +2643,7 @@ void while_operation() {
 		check_and_handle_pin_state(HVC_POS_PORT, HVC_POS_Pin);
  800170c:	2101      	movs	r1, #1
  800170e:	480a      	ldr	r0, [pc, #40]	@ (8001738 <while_operation+0x54>)
- 8001710:	f7ff ff7a 	bl	8001608 <check_and_handle_pin_state>
+ 8001710:	f7ff ff78 	bl	8001604 <check_and_handle_pin_state>
 		HAL_Delay(1000); // Wait for 1 second to ensure stability
  8001714:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
  8001718:	f000 fb48 	bl	8001dac <HAL_Delay>
@@ -2660,7 +2655,7 @@ void while_operation() {
 		check_and_handle_pin_state(P_CHARGE_PORT, P_CHARGE_Pin);
  8001726:	2104      	movs	r1, #4
  8001728:	4803      	ldr	r0, [pc, #12]	@ (8001738 <while_operation+0x54>)
- 800172a:	f7ff ff6d 	bl	8001608 <check_and_handle_pin_state>
+ 800172a:	f7ff ff6b 	bl	8001604 <check_and_handle_pin_state>
 		Status = OPERATION; // Set status to OPERATION
  800172e:	4b03      	ldr	r3, [pc, #12]	@ (800173c <while_operation+0x58>)
  8001730:	2205      	movs	r2, #5
@@ -2696,7 +2691,7 @@ void set_discharge() {
 	check_and_handle_pin_state(CTRL_OK_GPIO_Port, CTRL_OK_Pin);
  8001762:	f44f 7180 	mov.w	r1, #256	@ 0x100
  8001766:	4806      	ldr	r0, [pc, #24]	@ (8001780 <set_discharge+0x40>)
- 8001768:	f7ff ff4e 	bl	8001608 <check_and_handle_pin_state>
+ 8001768:	f7ff ff4c 	bl	8001604 <check_and_handle_pin_state>
 
 	operation = 0; // Reset operation status
  800176c:	4b05      	ldr	r3, [pc, #20]	@ (8001784 <set_discharge+0x44>)
@@ -2712,7 +2707,7 @@ void set_discharge() {
  800177a:	bd80      	pop	{r7, pc}
  800177c:	20000000 	.word	0x20000000
  8001780:	40020000 	.word	0x40020000
- 8001784:	2000008c 	.word	0x2000008c
+ 8001784:	20000088 	.word	0x20000088
 
 08001788 <set_charging>:
 
@@ -2735,7 +2730,7 @@ void set_charging() {
 	check_and_handle_pin_state(CHARGE_NEG_PORT, CHARGE_NEG_Pin);
  80017a0:	2110      	movs	r1, #16
  80017a2:	4809      	ldr	r0, [pc, #36]	@ (80017c8 <set_charging+0x40>)
- 80017a4:	f7ff ff30 	bl	8001608 <check_and_handle_pin_state>
+ 80017a4:	f7ff ff2e 	bl	8001604 <check_and_handle_pin_state>
 
 	// Set CHARGE_POS_PIN and check if it is set correctly
 	HAL_GPIO_WritePin(CHARGE_POS_PORT, CHARGE_POS_Pin, GPIO_PIN_SET);
@@ -2746,7 +2741,7 @@ void set_charging() {
 	check_and_handle_pin_state(CHARGE_POS_PORT, CHARGE_POS_Pin);
  80017b2:	2108      	movs	r1, #8
  80017b4:	4804      	ldr	r0, [pc, #16]	@ (80017c8 <set_charging+0x40>)
- 80017b6:	f7ff ff27 	bl	8001608 <check_and_handle_pin_state>
+ 80017b6:	f7ff ff25 	bl	8001604 <check_and_handle_pin_state>
 
 	Status = CHARGING; // Update system status to CHARGING after successful pin settings
  80017ba:	4b02      	ldr	r3, [pc, #8]	@ (80017c4 <set_charging+0x3c>)
