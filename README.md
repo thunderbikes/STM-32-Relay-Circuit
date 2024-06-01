@@ -12,10 +12,11 @@ This project is a microcontroller-based system designed to control an electric m
 6. [Schematics](#schematics)
 7. [Functions](#functions)
 8. [Pending Tasks](#pending-tasks)
-9. [Contact](#contact)
+9. [License](#license)
+10. [Contact](#contact)
 
 ## Installation
-Tasks
+
 ### Prerequisites
 -STM32 MCU
 -CubeIDE
@@ -60,7 +61,7 @@ Opens all relays to avoid conflicts when switching between states.
 
 Reads digital inputs for charge, ignition, and directional signals.
 
-### `allAuxDigitalRead()`yy
+### `allAuxDigitalRead()`
 
 Reads digital inputs for the three relay signals.
 
@@ -99,6 +100,9 @@ Opens all relays and shuts down power (ctrl_ok=0)
 
 -CANbus intergration
 -Error logging (through CANbus)
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 Email inquiries to ubcthunderbikes@gmail.com
