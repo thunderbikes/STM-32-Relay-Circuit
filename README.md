@@ -24,7 +24,7 @@ This project is a microcontroller-based system designed to control an electric m
 
 ### Steps
 
-Install CubeIDE and flash [main.c](main.c) onto STM32. 
+Install CubeIDE and flash [main.c](MOSFET%20Control/Core/Src/main.c) onto STM32. 
 
 ## Operation
 
