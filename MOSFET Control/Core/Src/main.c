@@ -84,6 +84,8 @@ int operation = 0;
 int ignition = 0;
 int charging = 0;
 
+float can_voltage =0.0;
+
 uint32_t updating_start_tick = 0;
 
 //all possible status
@@ -109,6 +111,7 @@ CAN_HandleTypeDef hcan2;
 SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 
@@ -525,6 +528,9 @@ int _write(int file, char *ptr, int len) {
 //I dont know how to set up interupt as on a timer -ray)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // Check if the interrupt comes from TIM2
+	if(htim->Instance == TIM3){
+		can_voltage = 103.6; 	// MANUAL SET VOLTAGE
+		}
 	if (htim->Instance == TIM2) {
 		if (HAL_GPIO_ReadPin(SHDWN_ST_PORT, SHDWN_ST_Pin) == GPIO_PIN_SET) {
 			Status = SHUTDOWN;
@@ -625,7 +631,7 @@ static inline void check_and_handle_pin_state(GPIO_TypeDef *GPIOx,
 void set_precharge() {
 	uint32_t start_tick = HAL_GetTick(); // in milliseconds
 	uint32_t timeout = 30000; // Timeout set for 30000 milliseconds or 30 seconds
-	float hv_sense_voltage;
+	double hv_sense_voltage;
 	bool voltage_reached = false;
 
 	Status = UPDATING;
@@ -635,7 +641,7 @@ void set_precharge() {
 
 	while (1) {
 		hv_sense_voltage = Read_ADC_Voltage();
-		if (hv_sense_voltage >= 0.9 * 103.6) { // Assume 103.6 is the BMS battery voltage setting
+		if (hv_sense_voltage >= 0.9 * can_voltage) { // CANBUS VLAUE FROM ISR
 			voltage_reached = true;
 			Status = PRECHARGE; // Successfully precharged, update status
 			while_operation();
