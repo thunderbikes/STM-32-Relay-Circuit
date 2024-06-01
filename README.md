@@ -11,10 +11,11 @@ This project is a microcontroller-based system designed to control an electric m
 5. [Operation](#oeration)
 6. [Schematics](#schematics)
 7. [Functions](#functions)
-8. [Contact](#contact)
+8. [Pending Tasks](#pending-tasks)
+9. [Contact](#contact)
 
 ## Installation
-
+Tasks
 ### Prerequisites
 -STM32 MCU
 -CubeIDE
@@ -37,7 +38,7 @@ Install CubeIDE and flash [main.c](main.c) onto STM32.
 -During operation, bike functions as expected and waits for ignition to be turned off.
 -Discharge state opens all relays, cuts power and waits 30 seconds before enabling power to put bike into standby. 	
 
- ### Emergency Handling:
+### Emergency Handling:
 -Constant timed interrupts that to verify state of bike with state of relays through auxiliary inputs
 -Any errors will activate the error handling which opens all relays and also stops power
 -External errors will be logged in MCU before opening all relays
@@ -94,6 +95,10 @@ Interrupt function verifying AUX signals with current state
 ### `Error_Handler()`
 Opens all relays and shuts down power (ctrl_ok=0)
 
+## Pending Tasks
+
+-CANbus intergration
+-Error logging (through CANbus)
 
 ## Contact
 Email inquiries to ubcthunderbikes@gmail.com
