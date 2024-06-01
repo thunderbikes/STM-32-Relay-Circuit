@@ -18,9 +18,9 @@ This project is a microcontroller-based system designed to control an electric m
 ## Installation
 
 ### Prerequisites
--STM32 MCU
--CubeIDE
--All related components and PCB
+- STM32 MCU
+- CubeIDE
+- All related components and PCB
 
 ### Steps
 
@@ -29,24 +29,24 @@ Install CubeIDE and flash [main.c](main.c) onto STM32.
 ## Operation
 
 ### Initialization:
--Initialize all GPIO pins and configure relays
+- Initialize all GPIO pins and configure relays
 *deepak might need to add some stuff here regarding what CubeIDE automatically does
 
 ### Main Control Loop:
--Transitions through states with ignition, operation and charge variables
--Begins in standby state physical ignition starting the precharge state or charge switch beginning charging. Pump is remains enabled forever during and after precharge
--Precharge ends and operation is true after high voltage sensor on motor reaches 90% of peak battery voltage. There is a 30 second timeout during this state for safey.
--During operation, bike functions as expected and waits for ignition to be turned off.
--Discharge state opens all relays, cuts power and waits 30 seconds before enabling power to put bike into standby. 	
+- Transitions through states with ignition, operation and charge variables
+- Begins in standby state physical ignition starting the precharge state or charge switch beginning charging. Pump is remains enabled forever during and after precharge
+- Precharge ends and operation is true after high voltage sensor on motor reaches 90% of peak battery voltage. There is a 30 second timeout during this state for safey.
+- During operation, bike functions as expected and waits for ignition to be turned off.
+- Discharge state opens all relays, cuts power and waits 30 seconds before enabling power to put bike into standby. 	
 
 ### Emergency Handling:
--Constant timed interrupts that to verify state of bike with state of relays through auxiliary inputs
--Any errors will activate the error handling which opens all relays and also stops power
--External errors will be logged in MCU before opening all relays
+- Constant timed interrupts that to verify state of bike with state of relays through auxiliary inputs
+- Any errors will activate the error handling which opens all relays and also stops power
+- External errors will be logged in MCU before opening all relays
 
 ## Customization
--How often the interrupt check’s relay states
--How many repeated “UPDATING” states before error handling kicks in
+- How often the interrupt check’s relay states
+- How many repeated “UPDATING” states before error handling kicks in
 
 ## Schematics
 ![Before final redesigns (outdated)](Schematic.pdf)
@@ -98,8 +98,8 @@ Opens all relays and shuts down power (ctrl_ok=0)
 
 ## Pending Tasks
 
--CANbus intergration
--Error logging (through CANbus)
+- CANbus intergration
+- Error logging (through CANbus)
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
