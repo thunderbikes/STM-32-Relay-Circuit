@@ -91,8 +91,6 @@ void Error_Handler(void);
 #define CTRL_OK_GPIO_Port GPIOA
 #define SHDWN_ST_Pin GPIO_PIN_9
 #define SHDWN_ST_GPIO_Port GPIOA
-#define HV_SENSEA10_Pin GPIO_PIN_10
-#define HV_SENSEA10_GPIO_Port GPIOA
 #define IMD_IO_H_Pin GPIO_PIN_12
 #define IMD_IO_H_GPIO_Port GPIOC
 #define R1_AUX_Pin GPIO_PIN_4
