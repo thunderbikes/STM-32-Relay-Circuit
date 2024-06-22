@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -224,8 +227,16 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  if (Reading_Pin('I') == 1 && operation == 0) {
+	  		set_precharge();
+	  	}
+	  	//Charging
+	  if (Reading_Pin('c') == 1 && Reading_Pin('I') == 0 && operation == 0) {
+	  		//make sure no accidental charging during operation ^^^-ray
+	  		set_charging();
+	  	}
 
-    /* USER CODE BEGIN 3 */
+	  /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -509,7 +520,7 @@ static void MX_GPIO_Init(void)
                           |CHARGE_NEG_Pin|PUMP_ENABLE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CTRL_OK_GPIO_Port, CTRL_OK_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, CTRL_OK_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : IMD_IO_L_Pin IGNITION_Pin CHARGE_ENABLE_Pin IMD_IO_H_Pin */
   GPIO_InitStruct.Pin = IMD_IO_L_Pin|IGNITION_Pin|CHARGE_ENABLE_Pin|IMD_IO_H_Pin;
@@ -540,12 +551,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CTRL_OK_Pin */
+  /*Configure GPIO pins : CTRL_OK_Pin BLINK_TEST_Pin */
   GPIO_InitStruct.Pin = CTRL_OK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CTRL_OK_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
