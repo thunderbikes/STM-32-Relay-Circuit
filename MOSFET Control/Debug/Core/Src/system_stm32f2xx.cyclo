@@ -1,2 +1,0 @@
-../Core/Src/system_stm32f2xx.c:156:6:SystemInit	1
-../Core/Src/system_stm32f2xx.c:204:6:SystemCoreClockUpdate	6
