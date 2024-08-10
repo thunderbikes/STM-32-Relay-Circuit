@@ -223,7 +223,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  aaa
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -478,7 +478,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : CHARGE_Pin DEBUG_1_Pin DEBUG_2_Pin SWO_Pin
-                           HVC_POS_AUX_Pin HVC_NEG_AUX_Pin PRECHRG_AUX_Pin IMD_IO_H_Pin */
+                          works HVC_POS_AUX_Pin HVC_NEG_AUX_Pin PRECHRG_AUX_Pin IMD_IO_H_Pin */
   GPIO_InitStruct.Pin = CHARGE_Pin|DEBUG_1_Pin|DEBUG_2_Pin|SWO_Pin
                           |HVC_POS_AUX_Pin|HVC_NEG_AUX_Pin|PRECHRG_AUX_Pin|IMD_IO_H_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -602,24 +602,30 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 // delays are now built into the checks -ray
-static inline void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){ //
-	for (int i = 0; i < 5; ++i) {
-		HAL_Delay(100);
-        	if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
-			return;
-		}
-	}
-	Error_Handler();
+static inline void check_high(GPIO_TypeDef *GPIOx,uint16_t GPIO_Pin){
+
+	return;
+
+//	for (int i = 0; i < 5; ++i) {
+//		HAL_Delay(100);
+//        if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
+//			return;
+//		}
+//	}
+//	Error_Handler();
 }
 
 static inline void check_low(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
-    for (int i = 0; i < 5; ++i) {
-        HAL_Delay(100);
-        if (!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
-            return;
-        }
-    }
-    Error_Handler(); // Trigger error handler if the pin state is not low after retries
+
+	return;
+
+//    for (int i = 0; i < 5; ++i) {
+//        HAL_Delay(100);
+//        if (!HAL_GPIO_ReadPin(GPIOx, GPIO_Pin)) {
+//            return;
+//        }
+//    }
+//    Error_Handler(); // Trigger error handler if the pin state is not low after retries
 }
 
 
