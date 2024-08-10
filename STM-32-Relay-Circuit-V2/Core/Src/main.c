@@ -229,7 +229,7 @@ int main(void)
 	  	  while_operation();
 	  }
 
-	  if (HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin) == GPIO_PIN_SET) {
+	  else if (HAL_GPIO_ReadPin(CHARGE_PORT, CHARGE_Pin) == GPIO_PIN_SET) {
 	  	  set_charging();
   	  }
 
