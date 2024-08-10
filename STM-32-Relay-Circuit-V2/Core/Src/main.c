@@ -640,6 +640,11 @@ static inline void check_low(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
 
 //these functions use mostly copied code from old main loop -ray
 void set_precharge() {
+
+	// debug_LED
+	HAL_GPIO_WritePin(DEBUG_1_PORT, DEBUG_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(DEBUG_2_PORT, DEBUG_2_Pin, GPIO_PIN_SET);
+
 	uint32_t start_tick = HAL_GetTick(); // in milliseconds
 	uint32_t timeout = 30000; // Timeout set for 30000 milliseconds or 30 seconds
 	double hv_sense_voltage;
@@ -677,6 +682,11 @@ void set_precharge() {
 }
 
 void while_operation() {
+
+	// debug_LED
+	HAL_GPIO_WritePin(DEBUG_1_PORT, DEBUG_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(DEBUG_2_PORT, DEBUG_2_Pin, GPIO_PIN_RESET);
+
 	if (HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin) == GPIO_PIN_RESET) {
 		set_discharge();
 	} else {
@@ -695,6 +705,11 @@ void while_operation() {
 }
 
 void set_discharge() {
+
+	// debug_LED
+	HAL_GPIO_WritePin(DEBUG_1_PORT, DEBUG_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(DEBUG_2_PORT, DEBUG_2_Pin, GPIO_PIN_RESET);
+
 	Status = UPDATING;
 	HAL_Delay(30000); // 30-second delay for any necessary pre-discharge preparations
 
@@ -708,6 +723,11 @@ void set_discharge() {
 }
 
 void set_charging() {
+
+	// debug_LED
+	HAL_GPIO_WritePin(DEBUG_1_PORT, DEBUG_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(DEBUG_2_PORT, DEBUG_2_Pin, GPIO_PIN_SET);
+
 	Status = UPDATING;
 	allRelaysOpen();  // Open all relays to ensure the system is in a safe state
 
