@@ -223,7 +223,16 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  aaa
+
+	  if (HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin) == GPIO_PIN_SET) {
+		  set_precharge();
+	  	  while_operation();
+	  }
+
+	  else if (HAL_GPIO_ReadPin(CHARGE_PORT, CHARGE_Pin) == GPIO_PIN_SET) {
+	  	  set_charging();
+  	  }
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
