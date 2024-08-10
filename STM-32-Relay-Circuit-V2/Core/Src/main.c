@@ -224,6 +224,15 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+	  if (HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin) == GPIO_PIN_SET) {
+		  set_precharge();
+	  	  while_operation();
+	  }
+
+	  if (HAL_GPIO_ReadPin(IGNITION_PORT, IGNITION_Pin) == GPIO_PIN_SET) {
+	  	  set_charging();
+  	  }
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -510,6 +519,8 @@ int _write(int file, char *ptr, int len) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // Check if the interrupt comes from TIM2
+
+
 	if(htim->Instance == TIM3){
 		can_voltage = 103.6; 	// MANUAL SET VOLTAGE
 		}
